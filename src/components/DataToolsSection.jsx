@@ -15,6 +15,7 @@ const LayersIcon = getIcon('layers');
 const XIcon = getIcon('x');
 
 function DataToolsSection() {
+  const [importModalConfig, setImportModalConfig] = React.useState({});
   const [showImportModal, setShowImportModal] = React.useState(false);
   const [showExportModal, setShowExportModal] = React.useState(false);
   return (
@@ -79,28 +80,25 @@ function DataToolsSection() {
               
               <button
                 onClick={() => setShowImportModal(true)}
-                className="btn btn-primary flex items-center space-x-2 mb-4"
-                aria-label="Import feedback data"
-              >
                 <UploadIcon className="w-4 h-4" />
                 <span>Import Feedback</span>
               </button>
               
               <ol className="list-decimal list-inside space-y-2 text-surface-700 dark:text-surface-300">
                 
+
+              <button
+                onClick={() => {
+                  setImportModalConfig({ selectedSource: 'csv' });
+                  setShowImportModal(true);
+                }}
+                className="btn btn-secondary flex items-center space-x-2 mb-4 hover:bg-surface-200 hover:text-primary-dark dark:hover:bg-surface-700 dark:hover:text-primary-light"
+                aria-label="Import feedback from spreadsheet"
+              >
+                <FileSpreadsheetIcon className="w-4 h-4 mr-1" />
+                <span>Import from Spreadsheet</span>
+              </button>
               </ol>
-            </div>
-            
-            <div className="rounded-lg overflow-hidden border border-surface-200 dark:border-surface-700">
-              <img 
-                src="https://images.unsplash.com/photo-1559526324-593bc073d938?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
-                alt="Import process demonstration" 
-                className="w-full h-48 object-cover"
-              />
-            </div>
-          </div>
-          
-          {/* Export Tools */}
           <div>
             <div className="flex items-center mb-4">
               <div className="p-3 rounded-full bg-secondary-light/20 dark:bg-secondary-dark/30 mr-3">
@@ -145,15 +143,15 @@ function DataToolsSection() {
         {showExportModal && <ExportModal onClose={() => setShowExportModal(false)} />}
         
         {/* Export Modal */}
-        {showImportModal && <ImportModal onClose={() => setShowImportModal(false)} />}
+        {showImportModal && <ImportModal onClose={() => setShowImportModal(false)} modalConfig={importModalConfig} />}
       </motion.div>
     </section> 
   );
 }
 
-function ImportModal({ onClose }) {
+function ImportModal({ onClose, modalConfig = {} }) {
   const [currentStep, setCurrentStep] = React.useState(1);
-  const [selectedSource, setSelectedSource] = React.useState('');
+  const [selectedSource, setSelectedSource] = React.useState(modalConfig.selectedSource || '');
   const [fileName, setFileName] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [mappedFields, setMappedFields] = React.useState({
@@ -173,6 +171,13 @@ function ImportModal({ onClose }) {
   };
   
   const handleNextStep = () => {
+    // If source is pre-selected from modalConfig and we're on step 1, 
+    // move directly to step 2
+    if (currentStep === 1 && modalConfig.selectedSource && !fileName) {
+      setCurrentStep(2);
+      return;
+    }
+    
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -226,7 +231,7 @@ function ImportModal({ onClose }) {
   const renderStepContent = () => {
     switch(currentStep) {
       case 1:
-        return (
+        return !selectedSource && modalConfig.selectedSource ? handleNextStep() : (
           <div className="py-4">
             <h3 className="text-lg font-medium mb-4">Select Import Source</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -239,7 +244,7 @@ function ImportModal({ onClose }) {
                     hover:shadow-soft focus:outline-none focus:ring-2 focus:ring-primary/50 
                     cursor-pointer transition-all duration-200 transform hover:-translate-y-1 ${
                     selectedSource === source.id 
-                      ? 'border-primary-light ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10 shadow-md' 
+        return (
                       : 'border-surface-200 dark:border-surface-700'
                   }`}
                   aria-pressed={selectedSource === source.id}
