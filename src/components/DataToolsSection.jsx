@@ -246,9 +246,8 @@ function ImportModal({ onClose, modalConfig = {} }) {
                     hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-700/50 
                     hover:shadow-soft focus:outline-none focus:ring-2 focus:ring-primary/50 
                     cursor-pointer transition-all duration-200 transform hover:-translate-y-1 ${
-                    selectedSource === source.id 
-                      : 'border-surface-200 dark:border-surface-700'
-                  }`}
+                    selectedSource === source.id ? 'border-primary-light ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10 shadow-md' 
+                      : 'border-surface-200 dark:border-surface-700'}`}
                     }
                   aria-pressed={selectedSource === source.id}
                 >
