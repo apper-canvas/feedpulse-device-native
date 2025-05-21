@@ -219,13 +219,15 @@ function ImportModal({ onClose }) {
                 <button
                   key={source.id}
                   onClick={() => setSelectedSource(source.id)}
-                  className={`p-4 rounded-lg border ${
+                  className={`p-4 rounded-lg border hover:border-primary/70 hover:bg-surface-50 dark:hover:bg-surface-700/50 
+                    focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all duration-200 ${
                     selectedSource === source.id 
-                      ? 'border-primary ring-2 ring-primary/20' 
+                      ? 'border-primary ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10 shadow-sm' 
                       : 'border-surface-200 dark:border-surface-700'
                   } flex flex-col items-center justify-center transition-all`}
+                  aria-pressed={selectedSource === source.id}
                 >
-                  <div className="mb-3">{source.icon}</div>
+                  <div className="mb-3 transform transition-transform group-hover:scale-110">{source.icon}</div>
                   <span className="font-medium">{source.name}</span>
                 </button>
               ))}
@@ -237,13 +239,27 @@ function ImportModal({ onClose }) {
                   Select your {selectedSource === 'email' ? 'email export file' : selectedSource.toUpperCase()} file:
                 </label>
                 <div className="flex items-center space-x-3">
-                  <label className="btn btn-secondary cursor-pointer">
+                  <label className="btn btn-secondary cursor-pointer hover:bg-surface-300 dark:hover:bg-surface-600 
+                    focus-within:ring-2 focus-within:ring-primary/30 transition-all duration-200">
                     <span>Choose File</span>
                     <input type="file" className="hidden" onChange={handleFileChange} />
                   </label>
-                  <span className="text-sm text-surface-600 dark:text-surface-400">
-                    {fileName || "No file selected"}
-                  </span>
+                  {fileName ? (
+                    <div className="flex items-center space-x-2 px-3 py-1.5 bg-surface-100 dark:bg-surface-700 rounded-md">
+                      <FileIcon className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-medium text-surface-700 dark:text-surface-300">
+                        {fileName}
+                      </span>
+                      <button 
+                        onClick={() => setFileName('')}
+                        className="p-0.5 rounded-full hover:bg-surface-200 dark:hover:bg-surface-600"
+                        aria-label="Remove file">
+                        <XIcon className="w-3.5 h-3.5 text-surface-500" />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-surface-500 dark:text-surface-400">No file selected</span>
+                  )}
                 </div>
               </div>
             )}
@@ -352,7 +368,7 @@ function ImportModal({ onClose }) {
           </button>
           <button 
             onClick={handleNextStep}
-            disabled={isLoading || (currentStep === 1 && !selectedSource)}
+            disabled={isLoading || (currentStep === 1 && (!selectedSource || !fileName))}
             className="btn btn-primary"
           >
             {isLoading ? (
