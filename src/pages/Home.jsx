@@ -91,6 +91,14 @@ function Home() {
     toast.info(`Feedback status updated to ${newStatus}`);
   };
   
+  const editFeedback = (id, updatedFeedback) => {
+    setFeedbacks(feedbacks.map(feedback => 
+      feedback.id === id ? { ...feedback, ...updatedFeedback } : feedback
+    ));
+    toast.success("Feedback updated successfully!");
+  };
+  
+  
   return (
     <div className="min-h-screen px-4 py-8 md:px-8">
       {/* Header */}
@@ -152,6 +160,7 @@ function Home() {
               feedbacks={feedbacks} 
               onAddFeedback={addFeedback}
               onUpdateStatus={updateFeedbackStatus}
+              onEditFeedback={editFeedback}
             />
           </div>
           

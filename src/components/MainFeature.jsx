@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 // Icons
 const PlusIcon = getIcon('plus');
 const MessageSquareIcon = getIcon('message-square');
+const EditIcon = getIcon('edit-2');
 const XIcon = getIcon('x');
 const ThumbsUpIcon = getIcon('thumbs-up');
 const ThumbsDownIcon = getIcon('thumbs-down');
@@ -18,10 +19,11 @@ const InboxIcon = getIcon('inbox');
 const FilterIcon = getIcon('filter');
 const RefreshCwIcon = getIcon('refresh-cw');
 
-function MainFeature({ feedbacks, onAddFeedback, onUpdateStatus }) {
+function MainFeature({ feedbacks, onAddFeedback, onUpdateStatus, onEditFeedback }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentEditFeedback, setCurrentEditFeedback] = useState(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -65,6 +67,34 @@ function MainFeature({ feedbacks, onAddFeedback, onUpdateStatus }) {
     });
     
     setShowAddForm(false);
+  };
+
+  const handleEditClick = (feedback) => {
+    setCurrentEditFeedback(feedback);
+    setFormData({
+      clientName: feedback.clientName,
+      content: feedback.content,
+      source: feedback.source,
+      category: feedback.category,
+      sentiment: feedback.sentiment,
+      priority: feedback.priority,
+      status: feedback.status
+    });
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.clientName.trim() || !formData.content.trim()) {
+      toast.error("Client name and feedback content are required!");
+      return;
+    }
+    
+    onEditFeedback(currentEditFeedback.id, formData);
+    
+    // Close modal
+    setCurrentEditFeedback(null);
   };
   
   // Filter feedbacks by status and search term
@@ -194,9 +224,20 @@ function MainFeature({ feedbacks, onAddFeedback, onUpdateStatus }) {
                   
                   <div className="flex md:flex-col items-center md:items-end gap-2">
                     <StatusBadge status={feedback.status} />
-                    
-                    <div className="flex items-center gap-1">
-                      <StatusActionButton 
+
+                    <div className="flex items-center gap-1 mt-2">
+                      <button
+                        onClick={() => handleEditClick(feedback)}
+                        className="inline-flex items-center gap-1 text-xs font-medium py-1 px-2 rounded-md 
+                                 bg-surface-100 hover:bg-surface-200 dark:bg-surface-700 dark:hover:bg-surface-600
+                                 text-surface-700 dark:text-surface-300 transition-colors duration-150"
+                        title="Edit feedback"
+                      >
+                        <EditIcon className="w-4 h-4" />
+                        <span className="hidden md:inline">Edit</span>
+                      </button>
+                      
+                      <StatusActionButton
                         currentStatus={feedback.status}
                         targetStatus="in-progress"
                         onClick={() => onUpdateStatus(feedback.id, "in-progress")}
@@ -376,6 +417,156 @@ function MainFeature({ feedbacks, onAddFeedback, onUpdateStatus }) {
                     className="btn-primary"
                   >
                     Add Feedback
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Feedback Modal */}
+      <AnimatePresence>
+        {currentEditFeedback && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50"
+            onClick={() => setCurrentEditFeedback(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-surface-800 rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-4 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Edit Feedback</h3>
+                <button 
+                  onClick={() => setCurrentEditFeedback(null)}
+                  className="p-1 rounded-full hover:bg-surface-200 dark:hover:bg-surface-700"
+                >
+                  <XIcon className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                    Client Name
+                  </label>
+                  <input
+                    type="text"
+                    name="clientName"
+                    value={formData.clientName}
+                    onChange={handleInputChange}
+                    placeholder="Enter client or company name"
+                    className="input-field"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                    Feedback Content
+                  </label>
+                  <textarea
+                    name="content"
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    placeholder="Enter feedback details..."
+                    className="input-field min-h-[100px]"
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                      Source
+                    </label>
+                    <select
+                      name="source"
+                      value={formData.source}
+                      onChange={handleInputChange}
+                      className="input-field"
+                    >
+                      <option value="Email">Email</option>
+                      <option value="Support Ticket">Support Ticket</option>
+                      <option value="Feedback Form">Feedback Form</option>
+                      <option value="Phone Call">Phone Call</option>
+                      <option value="Social Media">Social Media</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                      Category
+                    </label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="input-field"
+                    >
+                      <option value="General">General</option>
+                      <option value="UI/UX">UI/UX</option>
+                      <option value="Bug">Bug</option>
+                      <option value="Feature Request">Feature Request</option>
+                      <option value="Performance">Performance</option>
+                      <option value="Support">Support</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                      Sentiment
+                    </label>
+                    <select
+                      name="sentiment"
+                      value={formData.sentiment}
+                      onChange={handleInputChange}
+                      className="input-field"
+                    >
+                      <option value="positive">Positive</option>
+                      <option value="neutral">Neutral</option>
+                      <option value="negative">Negative</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                      Priority
+                    </label>
+                    <select
+                      name="priority"
+                      value={formData.priority}
+                      onChange={handleInputChange}
+                      className="input-field"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="pt-4 flex justify-end gap-3 border-t border-surface-200 dark:border-surface-700">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentEditFeedback(null)}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                  >
+                    Update Feedback
                   </button>
                 </div>
               </form>
