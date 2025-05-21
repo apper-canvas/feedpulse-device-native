@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { getIcon } from '../utils/iconUtils';
 import MainFeature from '../components/MainFeature';
+import DataToolsSection from '../components/DataToolsSection';
 
 // Icons
 const MessageSquareIcon = getIcon('message-square');
@@ -207,6 +208,13 @@ function Home() {
           </div>
         </div>
       </main>
+
+      {/* Import/Export Tools Section */}
+      <div className="container mx-auto max-w-6xl mt-12">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.4 }}>
+          <DataToolsSection />
+        </motion.div>
+      </div>
       
       {/* Footer */}
       <footer className="mt-12 py-6 border-t border-surface-200 dark:border-surface-800">
