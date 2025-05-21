@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { getIcon } from '../utils/iconUtils';
 
@@ -127,7 +128,7 @@ function ExportOption({ icon, title, description, color }) {
   return (
     <div className="p-4 rounded-lg border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800">
       <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-3 ${colorClasses[color]}`}>
-        {React.cloneElement(icon, { className: "w-5 h-5" })}
+        {React.isValidElement(icon) ? React.cloneElement(icon, { className: "w-5 h-5" }) : icon}
       </div>
       <h5 className="font-medium mb-1">{title}</h5>
       <p className="text-sm text-surface-600 dark:text-surface-400">{description}</p>
