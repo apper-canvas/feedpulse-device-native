@@ -214,21 +214,26 @@ function ImportModal({ onClose }) {
         return (
           <div className="py-4">
             <h3 className="text-lg font-medium mb-4">Select Import Source</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {importSources.map(source => (
                 <button
                   key={source.id}
                   onClick={() => setSelectedSource(source.id)}
-                  className={`p-4 rounded-lg border hover:border-primary/70 hover:bg-surface-50 dark:hover:bg-surface-700/50 
-                    focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all duration-200 ${
+                  className={`p-4 rounded-lg border relative flex flex-col items-center justify-center
+                    hover:border-primary/70 hover:bg-surface-50 dark:hover:bg-surface-700/50 
+                    focus:outline-none focus:ring-2 focus:ring-primary/50 
+                    cursor-pointer transition-all duration-200 ${
                     selectedSource === source.id 
                       ? 'border-primary ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10 shadow-sm' 
                       : 'border-surface-200 dark:border-surface-700'
-                  } flex flex-col items-center justify-center transition-all`}
+                  }`}
                   aria-pressed={selectedSource === source.id}
                 >
-                  <div className="mb-3 transform transition-transform group-hover:scale-110">{source.icon}</div>
+                  <div className="mb-3 transform transition-transform duration-200 hover:scale-110">{source.icon}</div>
                   <span className="font-medium">{source.name}</span>
+                  {selectedSource === source.id && (
+                    <span className="absolute top-2 right-2 w-3 h-3 bg-primary rounded-full shadow-sm"></span>
+                  )}
                 </button>
               ))}
             </div>
