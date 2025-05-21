@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; 
 import { getIcon } from '../utils/iconUtils';
 
 // Icons
@@ -11,8 +11,10 @@ const CheckIcon = getIcon('check-circle');
 const FileSpreadsheetIcon = getIcon('file-spreadsheet');
 const FilePdfIcon = getIcon('file-text');
 const LayersIcon = getIcon('layers');
+const XIcon = getIcon('x');
 
 function DataToolsSection() {
+  const [showImportModal, setShowImportModal] = React.useState(false);
   return (
     <section className="mb-12">
       <motion.div
@@ -65,12 +67,25 @@ function DataToolsSection() {
             
             <div className="mb-6">
               <h4 className="font-medium mb-2">How It Works:</h4>
-              <ol className="list-decimal list-inside space-y-2 text-surface-700 dark:text-surface-300">
-                <li>Click the "Import" button from the feedback dashboard</li>
+              <ol className="list-decimal list-inside space-y-2 text-surface-700 dark:text-surface-300 mb-4">
+                <li>Click the Import button below</li>
                 <li>Select your data source or file format</li>
                 <li>Map fields to ensure data is imported correctly</li>
                 <li>Review the data and confirm the import</li>
                 <li>Your feedback items appear instantly in your dashboard</li>
+              </ol>
+              
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="btn btn-primary flex items-center space-x-2 mb-4"
+                aria-label="Import feedback data"
+              >
+                <UploadIcon className="w-4 h-4" />
+                <span>Import Feedback</span>
+              </button>
+              
+              <ol className="list-decimal list-inside space-y-2 text-surface-700 dark:text-surface-300">
+                
               </ol>
             </div>
             
@@ -112,9 +127,181 @@ function DataToolsSection() {
             </div>
           </div>
         </div>
+        
+        {/* Import Modal */}
+        {showImportModal && <ImportModal onClose={() => setShowImportModal(false)} />}
       </motion.div>
     </section>
   );
+}
+
+function ImportModal({ onClose }) {
+  const [currentStep, setCurrentStep] = React.useState(1);
+  const [selectedSource, setSelectedSource] = React.useState('');
+  const [fileName, setFileName] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [mappedFields, setMappedFields] = React.useState({
+    clientName: '',
+    content: '',
+    source: '',
+    category: '',
+    sentiment: '',
+    priority: '',
+  });
+  
+  const importSources = [
+    { id: 'csv', name: 'CSV File', icon: <FileSpreadsheetIcon className="w-5 h-5 text-green-500" /> },
+    { id: 'email', name: 'Email Threads', icon: <MailIcon className="w-5 h-5 text-blue-500" /> },
+    { id: 'json', name: 'JSON Data', icon: <FileIcon className="w-5 h-5 text-amber-500" /> },
+  ];
+  
+  const availableFields = [
+    { id: 'company', name: 'Company' },
+    { id: 'customer', name: 'Customer Name' },
+    { id: 'feedback', name: 'Feedback Text' },
+    { id: 'channel', name: 'Channel' },
+    { id: 'type', name: 'Feedback Type' },
+    { id: 'rating', name: 'Sentiment Rating' },
+    { id: 'urgency', name: 'Urgency' },
+  ];
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFileName(file.name);
+    }
+  };
+  
+  const handleFieldMapping = (feedbackField, sourceField) => {
+    setMappedFields({
+      ...mappedFields,
+      [feedbackField]: sourceField
+    });
+  };
+  
+  const handleImport = () => {
+    setIsLoading(true);
+    
+    // Simulate import process
+    setTimeout(() => {
+      setIsLoading(false);
+      // Show success toast using the existing toast system from parent component
+      const toastEvent = new CustomEvent('toast', { 
+        detail: { 
+          type: 'success', 
+          message: `Successfully imported feedback from ${fileName || selectedSource}` 
+        } 
+      });
+      window.dispatchEvent(toastEvent);
+      onClose();
+    }, 1500);
+  };
+  
+  // Step content based on current step
+  const renderStepContent = () => {
+    switch(currentStep) {
+      case 1:
+        return (
+          <div className="py-4">
+            <h3 className="text-lg font-medium mb-4">Select Import Source</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {importSources.map(source => (
+                <button
+                  key={source.id}
+                  onClick={() => setSelectedSource(source.id)}
+                  className={`p-4 rounded-lg border ${
+                    selectedSource === source.id 
+                      ? 'border-primary ring-2 ring-primary/20' 
+                      : 'border-surface-200 dark:border-surface-700'
+                  } flex flex-col items-center justify-center transition-all`}
+                >
+                  <div className="mb-3">{source.icon}</div>
+                  <span className="font-medium">{source.name}</span>
+                </button>
+              ))}
+            </div>
+            
+            {selectedSource && (
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-2">
+                  Select your {selectedSource === 'email' ? 'email export file' : selectedSource.toUpperCase()} file:
+                </label>
+                <div className="flex items-center space-x-3">
+                  <label className="btn btn-secondary cursor-pointer">
+                    <span>Choose File</span>
+                    <input type="file" className="hidden" onChange={handleFileChange} />
+                  </label>
+                  <span className="text-sm text-surface-600 dark:text-surface-400">
+                    {fileName || "No file selected"}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+        
+      case 2:
+        return (
+          <div className="py-4">
+            <h3 className="text-lg font-medium mb-4">Map Fields</h3>
+            <p className="text-surface-600 dark:text-surface-400 mb-4">
+              Map the fields from your {selectedSource.toUpperCase()} file to FeedPulse fields:
+            </p>
+            
+            <div className="space-y-4">
+              {Object.keys(mappedFields).map(field => (
+                <div key={field} className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                  <label className="sm:w-1/3 block text-sm font-medium mb-1 sm:mb-0 capitalize">
+                    {field.replace(/([A-Z])/g, ' $1')}:
+                  </label>
+                  <select 
+                    className="sm:w-2/3 input-field"
+                    value={mappedFields[field]}
+                    onChange={(e) => handleFieldMapping(field, e.target.value)}
+                  >
+                    <option value="">-- Select field --</option>
+                    {availableFields.map(option => (
+                      <option key={option.id} value={option.id}>{option.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+        
+      case 3:
+        return (
+          <div className="py-4">
+            <h3 className="text-lg font-medium mb-4">Confirm Import</h3>
+            <p className="text-surface-600 dark:text-surface-400 mb-4">
+              You're about to import feedback from: <span className="font-medium">{fileName || selectedSource}</span>
+            </p>
+            
+            <div className="p-4 bg-surface-100 dark:bg-surface-700 rounded-lg mb-4">
+              <h4 className="font-medium mb-2">Field Mapping Summary:</h4>
+              <ul className="space-y-1 text-sm">
+                {Object.entries(mappedFields).map(([feedbackField, sourceField]) => (
+                  <li key={feedbackField} className="flex justify-between">
+                    <span className="capitalize">{feedbackField.replace(/([A-Z])/g, ' $1')}:</span>
+                    <span className="font-medium">
+                      {sourceField ? availableFields.find(f => f.id === sourceField)?.name : '(Not mapped)'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-lg text-amber-800 dark:text-amber-300">
+              <p>This will add new feedback items to your dashboard. This action cannot be undone.</p>
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
 }
 
 function ExportOption({ icon, title, description, color }) {
@@ -132,6 +319,110 @@ function ExportOption({ icon, title, description, color }) {
       </div>
       <h5 className="font-medium mb-1">{title}</h5>
       <p className="text-sm text-surface-600 dark:text-surface-400">{description}</p>
+    </div>
+  );
+}
+
+function ImportModal({ onClose }) {
+  const [currentStep, setCurrentStep] = React.useState(1);
+  const [selectedSource, setSelectedSource] = React.useState('');
+  const [fileName, setFileName] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  
+  // Field mapping state
+  const [mappedFields, setMappedFields] = React.useState({
+    clientName: '',
+    content: '',
+    source: '',
+    category: '',
+    sentiment: '',
+    priority: '',
+  });
+  
+  const handleNextStep = () => {
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleImport();
+    }
+  };
+  
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+  
+  const handleImport = () => {
+    setIsLoading(true);
+    
+    // Simulate import process
+    setTimeout(() => {
+      setIsLoading(false);
+      
+      // Show toast notification
+      import('react-toastify').then(({ toast }) => {
+        toast.success(`Successfully imported feedback from ${fileName || selectedSource}`);
+      });
+      
+      onClose();
+    }, 1500);
+  };
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
+        {/* Modal header */}
+        <div className="p-4 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between">
+          <h3 className="text-xl font-semibold">Import Feedback</h3>
+          <button 
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
+            aria-label="Close modal"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Modal body */}
+        <div className="p-4">
+          {/* Steps indicator */}
+          <div className="flex items-center justify-center mb-6">
+            {[1, 2, 3].map(step => (
+              <div key={step} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${currentStep === step ? 'bg-primary text-white' : currentStep > step ? 'bg-green-500 text-white' : 'bg-surface-200 dark:bg-surface-700'}`}>
+                  {currentStep > step ? <CheckIcon className="w-5 h-5" /> : step}
+                </div>
+                {step < 3 && <div className={`w-10 h-1 ${currentStep > step ? 'bg-green-500' : 'bg-surface-300 dark:bg-surface-600'}`}></div>}
+              </div>
+            ))}
+          </div>
+          
+          {renderStepContent()}
+        </div>
+        
+        {/* Modal footer */}
+        <div className="p-4 border-t border-surface-200 dark:border-surface-700 flex justify-between">
+          <button onClick={currentStep === 1 ? onClose : handlePrevStep} className="btn btn-secondary">
+            {currentStep === 1 ? 'Cancel' : 'Back'}
+          </button>
+          <button 
+            onClick={handleNextStep}
+            disabled={isLoading || (currentStep === 1 && !selectedSource)}
+            className="btn btn-primary"
+          >
+            {isLoading ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </span>
+            ) : currentStep === 3 ? 'Import Data' : 'Continue'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
