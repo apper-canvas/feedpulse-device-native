@@ -80,8 +80,9 @@ function DataToolsSection() {
               
               <button
                 onClick={() => setShowImportModal(true)}
-                <UploadIcon className="w-4 h-4" />
-                <span>Import Feedback</span>
+                className="btn btn-primary flex items-center space-x-2"
+              >
+                <UploadIcon className="w-4 h-4 mr-1" /><span>Import Feedback</span>
               </button>
               
               <ol className="list-decimal list-inside space-y-2 text-surface-700 dark:text-surface-300">
@@ -99,6 +100,8 @@ function DataToolsSection() {
                 <span>Import from Spreadsheet</span>
               </button>
               </ol>
+            </div>
+          </div>
           <div>
             <div className="flex items-center mb-4">
               <div className="p-3 rounded-full bg-secondary-light/20 dark:bg-secondary-dark/30 mr-3">
@@ -244,9 +247,9 @@ function ImportModal({ onClose, modalConfig = {} }) {
                     hover:shadow-soft focus:outline-none focus:ring-2 focus:ring-primary/50 
                     cursor-pointer transition-all duration-200 transform hover:-translate-y-1 ${
                     selectedSource === source.id 
-        return (
                       : 'border-surface-200 dark:border-surface-700'
                   }`}
+                    }
                   aria-pressed={selectedSource === source.id}
                 >
                   <div className="mb-3 transform transition-transform duration-200 group-hover:scale-110">{source.icon}</div>
