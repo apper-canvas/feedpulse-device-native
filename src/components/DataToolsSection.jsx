@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion'; 
+import { toast } from 'react-toastify';
 import { getIcon } from '../utils/iconUtils';
 
 // Icons
@@ -131,7 +132,7 @@ function DataToolsSection() {
         {/* Import Modal */}
         {showImportModal && <ImportModal onClose={() => setShowImportModal(false)} />}
       </motion.div>
-    </section>
+    </section> 
   );
 }
 
@@ -145,9 +146,25 @@ function ImportModal({ onClose }) {
     content: '',
     source: '',
     category: '',
-    sentiment: '',
-    priority: '',
-  });
+  const handleFieldMapping = (feedbackField, sourceField) => {
+    setMappedFields({
+      ...mappedFields,
+      [feedbackField]: sourceField
+    });
+  };
+  
+  // Import sources data
+      toast.success(`Successfully imported feedback from ${fileName || selectedSource}`);
+      onClose();
+    }, 1500);
+  };
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFileName(file.name);
+    }
+  };
   
   const importSources = [
     { id: 'csv', name: 'CSV File', icon: <FileSpreadsheetIcon className="w-5 h-5 text-green-500" /> },
@@ -164,38 +181,6 @@ function ImportModal({ onClose }) {
     { id: 'rating', name: 'Sentiment Rating' },
     { id: 'urgency', name: 'Urgency' },
   ];
-  
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFileName(file.name);
-    }
-  };
-  
-  const handleFieldMapping = (feedbackField, sourceField) => {
-    setMappedFields({
-      ...mappedFields,
-      [feedbackField]: sourceField
-    });
-  };
-  
-  const handleImport = () => {
-    setIsLoading(true);
-    
-    // Simulate import process
-    setTimeout(() => {
-      setIsLoading(false);
-      // Show success toast using the existing toast system from parent component
-      const toastEvent = new CustomEvent('toast', { 
-        detail: { 
-          type: 'success', 
-          message: `Successfully imported feedback from ${fileName || selectedSource}` 
-        } 
-      });
-      window.dispatchEvent(toastEvent);
-      onClose();
-    }, 1500);
-  };
   
   // Step content based on current step
   const renderStepContent = () => {
@@ -302,6 +287,63 @@ function ImportModal({ onClose }) {
         return null;
     }
   };
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white dark:bg-surface-800 rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-auto">
+        {/* Modal header */}
+        <div className="p-4 border-b border-surface-200 dark:border-surface-700 flex items-center justify-between">
+          <h3 className="text-xl font-semibold">Import Feedback</h3>
+          <button 
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
+            aria-label="Close modal"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Modal body */}
+        <div className="p-4">
+          {/* Steps indicator */}
+          <div className="flex items-center justify-center mb-6">
+            {[1, 2, 3].map(step => (
+              <div key={step} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${currentStep === step ? 'bg-primary text-white' : currentStep > step ? 'bg-green-500 text-white' : 'bg-surface-200 dark:bg-surface-700'}`}>
+                  {currentStep > step ? <CheckIcon className="w-5 h-5" /> : step}
+                </div>
+                {step < 3 && <div className={`w-10 h-1 ${currentStep > step ? 'bg-green-500' : 'bg-surface-300 dark:bg-surface-600'}`}></div>}
+              </div>
+            ))}
+          </div>
+          
+          {renderStepContent()}
+        </div>
+        
+        {/* Modal footer */}
+        <div className="p-4 border-t border-surface-200 dark:border-surface-700 flex justify-between">
+          <button onClick={currentStep === 1 ? onClose : handlePrevStep} className="btn btn-secondary">
+            {currentStep === 1 ? 'Cancel' : 'Back'}
+          </button>
+          <button 
+            onClick={handleNextStep}
+            disabled={isLoading || (currentStep === 1 && !selectedSource)}
+            className="btn btn-primary"
+          >
+            {isLoading ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </span>
+            ) : currentStep === 3 ? 'Import Data' : 'Continue'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ExportOption({ icon, title, description, color }) {
@@ -323,18 +365,8 @@ function ExportOption({ icon, title, description, color }) {
   );
 }
 
-function ImportModal({ onClose }) {
-  const [currentStep, setCurrentStep] = React.useState(1);
-  const [selectedSource, setSelectedSource] = React.useState('');
-  const [fileName, setFileName] = React.useState('');
-  const [isLoading, setIsLoading] = React.useState(false);
-  
-  // Field mapping state
-  const [mappedFields, setMappedFields] = React.useState({
-    clientName: '',
-    content: '',
-    source: '',
-    category: '',
+export default DataToolsSection;
+
     sentiment: '',
     priority: '',
   });
