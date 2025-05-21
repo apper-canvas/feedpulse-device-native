@@ -85,21 +85,20 @@ function DataToolsSection() {
                 <UploadIcon className="w-4 h-4 mr-1" /><span>Import Feedback</span>
               </button>
               
-              <ol className="list-decimal list-inside space-y-2 text-surface-700 dark:text-surface-300">
-                
-
+              <div className="mt-4">
               <button
                 onClick={() => {
                   setImportModalConfig({ selectedSource: 'csv' });
                   setShowImportModal(true);
                 }}
-                className="btn btn-secondary flex items-center space-x-2 mb-4 hover:bg-surface-200 hover:text-primary-dark dark:hover:bg-surface-700 dark:hover:text-primary-light"
+                className="btn btn-secondary flex items-center space-x-2 hover:bg-surface-200 hover:text-primary-dark dark:hover:bg-surface-700 dark:hover:text-primary-light"
                 aria-label="Import feedback from spreadsheet"
               >
                 <FileSpreadsheetIcon className="w-4 h-4 mr-1" />
                 <span>Import from Spreadsheet</span>
               </button>
-              </ol>
+              </div>
+              
             </div>
           </div>
           <div>
@@ -143,10 +142,10 @@ function DataToolsSection() {
         </div>
         
         {/* Import Modal */}
-        {showExportModal && <ExportModal onClose={() => setShowExportModal(false)} />}
+        {showImportModal && <ImportModal onClose={() => setShowImportModal(false)} modalConfig={importModalConfig} />}
         
         {/* Export Modal */}
-        {showImportModal && <ImportModal onClose={() => setShowImportModal(false)} modalConfig={importModalConfig} />}
+        {showExportModal && <ExportModal onClose={() => setShowExportModal(false)} />}
       </motion.div>
     </section> 
   );
@@ -245,10 +244,9 @@ function ImportModal({ onClose, modalConfig = {} }) {
                   className={`p-4 rounded-lg border relative flex flex-col items-center justify-center h-32
                     hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-700/50 
                     hover:shadow-soft focus:outline-none focus:ring-2 focus:ring-primary/50 
-                    cursor-pointer transition-all duration-200 transform hover:-translate-y-1 ${
-                    selectedSource === source.id ? 'border-primary-light ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10 shadow-md' 
-                      : 'border-surface-200 dark:border-surface-700'}`}
-                    }
+                    cursor-pointer transition-all duration-200 transform hover:-translate-y-1 
+                    ${selectedSource === source.id ? 'border-primary-light ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10 shadow-md' 
+                    : 'border-surface-200 dark:border-surface-700'}`}
                   aria-pressed={selectedSource === source.id}
                 >
                   <div className="mb-3 transform transition-transform duration-200 group-hover:scale-110">{source.icon}</div>
